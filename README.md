@@ -1,1 +1,3 @@
 # RISCV-CPU
+
+![](structure.jpg)
