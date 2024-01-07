@@ -97,20 +97,21 @@ wire						program_finish;
 
 reg                         q_hci_io_en;
 
-cpu cpu0(
-	.clk_in(clk),
-	.rst_in(rst | program_finish),
-	.rdy_in(cpu_rdy),
+cpu cpu0 (
+        .clk_in(clk),
+        .rst_in(rst | program_finish),
+        .rdy_in(cpu_rdy & (~hci_io_full | {1{SIM[0]}})),
 
-	.mem_din(cpu_ram_din),
-	.mem_dout(cpu_ram_dout),
-	.mem_a(cpu_ram_a),
-	.mem_wr(cpu_ram_wr),
-	
-	.io_buffer_full(hci_io_full),
+        .mem_din(cpu_ram_din),
+        .mem_dout(cpu_ram_dout),
+        .mem_a(cpu_ram_a),
+        .mem_wr(cpu_ram_wr),
 
-	.dbgreg_dout(cpu_dbgreg_dout)
-);
+        // .io_buffer_full(hci_io_full & ~1'b`SIM),
+        .io_buffer_full(1'b0),
+
+        .dbgreg_dout(cpu_dbgreg_dout)
+    );
 
 hci #(.SYS_CLK_FREQ(SYS_CLK_FREQ),
 	.RAM_ADDR_WIDTH(RAM_ADDR_WIDTH),
