@@ -55,16 +55,16 @@ module LSB (
 );
   integer i;
 
-  reg                busy      [16-1:0];
-  reg                is_store  [16-1:0];
-  reg [2:0] funct3    [16-1:0];
-  reg [4:0] rs1_rob_id[16-1:0];
-  reg [31:0] rs1_val   [16-1:0];
-  reg [4:0] rs2_rob_id[16-1:0];
-  reg [31:0] rs2_val   [16-1:0];
-  reg [31:0] imm       [16-1:0];
-  reg [3:0] rob_pos   [16-1:0];
-  reg                committed [16-1:0];
+  reg                busy      [15:0];
+  reg                is_store  [15:0];
+  reg [2:0] funct3    [15:0];
+  reg [4:0] rs1_rob_id[15:0];
+  reg [31:0] rs1_val   [15:0];
+  reg [4:0] rs2_rob_id[15:0];
+  reg [31:0] rs2_val   [15:0];
+  reg [31:0] imm       [15:0];
+  reg [3:0] rob_pos   [15:0];
+  reg                committed [15:0];
 
   reg [3:0] head, tail;
   reg [4:0] last_commit_pos;
@@ -115,12 +115,7 @@ module LSB (
       if (status == WAIT_MEM && mc_done) begin  // finish
         busy[head] <= 0;
         committed[head] <= 0;
-        // Discard load result
-        // if (!is_store[head]) begin
-        //   result <= 1;
-        //   result_val <= mc_r_data;
-        //   result_rob_pos <= rob_pos[head];
-        // end
+        
         if (last_commit_pos[3:0] == head) begin
           last_commit_pos <= 16;
           empty <= 1;

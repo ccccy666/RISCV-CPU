@@ -66,8 +66,8 @@ module rob(
   reg [31:0] pc       [15:0];
   reg [31:0] res_pc   [15:0];
 
-  reg       pred_jump[15:0];  // predict whether to jump, 1=jump
-  reg       res_jump [15:0];  // execution result
+  reg       pred_jump[15:0];
+  reg       res_jump [15:0]; 
   reg       ready    [15:0];
 
   reg [3:0] head, tail;
