@@ -10,11 +10,9 @@ module ROB(
     output wire rob_nxt_full,
     output reg rollback,
 
-    // to Instruction Fetcher, set pc
     output reg if_set_pc_en,
     output reg [31:0] if_set_pc,
 
-    // issue an instruction to Reorder Buffer
     input wire issue,
     input wire [4:0] issue_rd,
     input wire [6:0] issue_opcode,
@@ -22,35 +20,26 @@ module ROB(
     input wire issue_pred_jump,
     input wire issue_is_ready,
 
-    // for LSB to check if I/O read can be done
     output wire [3:0] head_rob_pos,
 
-    // commit
     output reg [3:0] commit_rob_pos,
-    // write to Register
     output reg reg_write,
     output reg [4:0] reg_rd,
     output reg [31:0] reg_val,
-    // commit store to Load Store Buffer
     output reg lsb_store,
-    // update predictor
     output reg commit_br,
     output reg commit_br_jump,
     output reg [31:0] commit_br_pc,
 
-    // handle the broadcast
-    // from Reservation Station
     input wire alu_result,
     input wire [3:0] alu_result_rob_pos,
     input wire [31:0] alu_result_val,
     input wire alu_result_jump,
     input wire [31:0] alu_result_pc,
-    // from Load Store Buffer
     input wire lsb_result,
     input wire [3:0] lsb_result_rob_pos,
     input wire [31:0] lsb_result_val,
 
-    // handle the query from Decoder
     input wire [3:0] rs1_pos,
     output wire rs1_ready,
     output wire [31:0] rs1_val,
@@ -81,7 +70,6 @@ wire nxt_empty = (head + commit == tail + issue && (empty || commit && !issue));
 assign rob_nxt_full = (head + commit == tail + issue && !nxt_empty);
 
 
-// handle the query from Decoder
 assign rs1_ready = ready[rs1_pos];
 assign rs1_val = val[rs1_pos];
 assign rs2_ready = ready[rs2_pos];
@@ -115,8 +103,8 @@ always @(posedge clk) begin
   end else begin
     empty <= nxt_empty;
     if (issue) begin
-      rd[tail] <= issue_rd;
       opcode[tail] <= issue_opcode;
+      rd[tail] <= issue_rd;
       pc[tail] <= issue_pc;
       pred_jump[tail] <= issue_pred_jump;
       ready[tail] <= issue_is_ready;

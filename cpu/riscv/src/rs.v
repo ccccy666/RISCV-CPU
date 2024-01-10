@@ -75,20 +75,8 @@ always @(posedge clk) begin
   end else if (!rdy) begin
     ;
   end else begin
-    if (issue) begin//add to rs
-      busy[free_pos] <= 1;
-      opcode[free_pos] <= issue_opcode;
-      funct3[free_pos] <= issue_funct3;
-      funct7[free_pos] <= issue_funct7;
-      pc[free_pos] <= issue_pc;
-      imm[free_pos] <= issue_imm;
-      rob_pos[free_pos] <= issue_rob_pos;
-      
-      rs1_val[free_pos] <= issue_rs1_val;
-      rs2_val[free_pos] <= issue_rs2_val;
-      rs1_rob_id[free_pos] <= issue_rs1_rob_id;
-      rs2_rob_id[free_pos] <= issue_rs2_rob_id;
-    end
+      //$display("free_pos:%d,ready_pos:%d",free_pos,ready_pos);
+    
     if (alu_result||lsb_result)begin
       for (i = 0; i < 16; i = i + 1) begin
         if(alu_result)begin
@@ -129,17 +117,55 @@ always @(posedge clk) begin
       
       busy[ready_pos] <= 0;
     end
-  
-    
+    if (issue) begin//add to rs
+      busy[free_pos] <= 1;
+      opcode[free_pos] <= issue_opcode;
+      funct3[free_pos] <= issue_funct3;
+      funct7[free_pos] <= issue_funct7;
+      pc[free_pos] <= issue_pc;
+      imm[free_pos] <= issue_imm;
+      rob_pos[free_pos] <= issue_rob_pos;
+      
+      rs1_val[free_pos] <= issue_rs1_val;
+      rs2_val[free_pos] <= issue_rs2_val;
+      rs1_rob_id[free_pos] <= issue_rs1_rob_id;
+      rs2_rob_id[free_pos] <= issue_rs2_rob_id;
+    end
 
   end
 end
 
+// wire full;
+// wire hasfree;
+reg [3:0] cnt;
+reg [3:0] empty_count;
 always @(*) begin
+  
+  // free_pos = 16;
+  // ready_pos = 16;
+  // rs_nxt_full = 1;
+  // for (i = 15; i >= 0; i = i - 1) begin
+  //   ready[i] = 0;
+  //   if (!busy[i]) begin
+      
+  //     free_pos = i;
+  //     if (!issue || i != free_pos) rs_nxt_full = 0;
+  //   end
+  //   if (busy[i] && rs1_rob_id[i][4] == 0 && rs2_rob_id[i][4] == 0) begin
+  //     ready[i]  = 1;
+  //     ready_pos = i;
+  //   end
+  // end
+
+  //$display("free_pos:%d,ready_pos:%d",free_pos,ready_pos);
   free_pos = 16;
   ready_pos = 16;
-  rs_nxt_full = 0;
+  cnt = 4'b0;
+  // hasfree = 1;
+  // full = 1;
   for (i = 15; i >= 0; i = i - 1) begin
+    //full = full & busy[i];
+    if (busy[i]) cnt = cnt + 1'b1;
     if (busy[i] && rs1_rob_id[i][4] == 0 && rs2_rob_id[i][4] == 0) begin
       ready[i] = 1;
       ready_pos = i;
@@ -149,9 +175,13 @@ always @(*) begin
       
     end
   end
-  if (issue && free_pos == 16) begin
-      rs_nxt_full = 1;
-  end
+  if ( (cnt == 15 && issue) || (cnt == 16) ) rs_nxt_full = 1;
+  else rs_nxt_full = 0;
+  // hasfree=1^full;
+  // if(issue&&hasfree)
+  // if (issue && free_pos == 16) begin
+  //     rs_nxt_full = 1;
+  // end
 end
 
 
