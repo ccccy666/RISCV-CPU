@@ -5,34 +5,27 @@ module IFetch (//with branch predictor
   input wire clk,
   input wire rst,
   input wire rdy,
+  input wire rs_nxt_full,
+  input wire lsb_nxt_full,
+  input wire rob_nxt_full,
 
-  // to Memory Controller
-  output reg mc_en,
-  output reg [31:0] mc_pc,
-  input wire mc_done,
-  input wire [511:0] mc_data,
+  input wire rob_set_pc_en,
+  input wire [31:0] rob_set_pc,
 
-  // to Instruction Decoder
+  input wire rob_br,
+  input wire rob_br_jump,
+  input wire [31:0] rob_br_pc,
+
   output reg inst_rdy,
   output reg [31:0] inst,
   output reg [31:0] inst_pc,
   output reg inst_pred_jump,
 
+  output reg mc_en,
+  output reg [31:0] mc_pc,
+  input wire mc_done,
+  input wire [511:0] mc_data
   
-
-  // from Reorder Buffer, set pc
-  input wire rob_set_pc_en,
-  input wire [31:0] rob_set_pc,
-  // from Reorder Buffer, update Branch Predictor
-  input wire rob_br,
-  input wire rob_br_jump,
-  input wire [31:0] rob_br_pc,
-  // Reservation Station
-  input wire rs_nxt_full,
-  // Load Store Buffer
-  input wire lsb_nxt_full,
-  // Reorder Buffer
-  input wire rob_nxt_full  
 );
 
 
@@ -62,7 +55,6 @@ reg [1:0] bht[256-1:0];
 wire [7:0] bht_idx = rob_br_pc[9:2];
 wire [7:0] pc_bht_idx = pc[9:2];
 
-  // Branch Predictor
 always @(*) begin
   pred_pc = pc + 4;
   pred_jump = 0;

@@ -1,8 +1,8 @@
-`ifndef RegFile
-`define RegFile
+`ifndef Register
+`define Register
 `include "constant.v"
 
-module RegFile (
+module Register (
     input wire clk,
     input wire rst,
     input wire rdy,
