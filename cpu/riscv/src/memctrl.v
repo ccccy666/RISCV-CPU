@@ -9,8 +9,8 @@ module MemCtrl (
 
     input wire rollback,
 
-    input wire [ 7:0] mem_din,   // data input bus
-    output reg [ 7:0] mem_dout,  // data output bus
+    input wire [7:0] mem_din,   // data input bus
+    output reg [7:0] mem_dout,  // data output bus
     output reg [31:0] mem_a,     // address bus (only 17:0 is used)
     output reg mem_wr,    // write/read signal (1 for write)
 

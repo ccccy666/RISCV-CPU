@@ -106,17 +106,7 @@ always @(posedge clk) begin
   end else if (!rdy) begin
     ;
   end else if (!rollback) begin
-    if (issue) begin
-      busy[tail] <= 1;
-      is_store[tail] <= issue_is_store;
-      funct3[tail] <= issue_funct3;
-      rs1_rob_id[tail] <= issue_rs1_rob_id;
-      rs1_val[tail] <= issue_rs1_val;
-      rs2_rob_id[tail] <= issue_rs2_rob_id;
-      rs2_val[tail] <= issue_rs2_val;
-      imm[tail] <= issue_imm;
-      rob_pos[tail] <= issue_rob_pos;
-    end
+    
     if (commit_store) begin
       for (i = 0; i < 16; i = i + 1)
         if (busy[i] && rob_pos[i] == commit_rob_pos && !committed[i]) begin
@@ -124,6 +114,7 @@ always @(posedge clk) begin
           last_commit_pos <= {1'b0, i[3:0]};
         end
     end
+    
     if (alu_result)//类似rs,拿到vi,vj
       for (i = 0; i < 16; i = i + 1) begin
         if (rs1_rob_id[i] == {1'b1, alu_result_rob_pos}) begin
@@ -148,6 +139,17 @@ always @(posedge clk) begin
         end
       end
 
+    if (issue) begin
+      busy[tail] <= 1;
+      is_store[tail] <= issue_is_store;
+      funct3[tail] <= issue_funct3;
+      rs1_rob_id[tail] <= issue_rs1_rob_id;
+      rs1_val[tail] <= issue_rs1_val;
+      rs2_rob_id[tail] <= issue_rs2_rob_id;
+      rs2_val[tail] <= issue_rs2_val;
+      imm[tail] <= issue_imm;
+      rob_pos[tail] <= issue_rob_pos;
+    end
     result <= 0;
     if (status == 1) begin
       if (mc_done) begin  // finish
@@ -203,6 +205,7 @@ always @(posedge clk) begin
     end
 
 
+    
     empty <= nxt_empty;
     head  <= head + pop;
     tail  <= tail + issue;
