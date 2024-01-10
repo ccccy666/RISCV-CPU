@@ -9,6 +9,7 @@
 `include "lsb.v"
 `include "alu.v"
 `include "rob.v"
+`include "predictor.v"
 
 module cpu(
   input  wire                 clk_in,			// system clock signal
@@ -38,28 +39,31 @@ module cpu(
 // - 0x30004 write: indicates program stop (will output '\0' through uart tx)
 // Reorder Buffer rollback signal
 wire rollback;
-// if RS/LSB/ROB is full in next cycle, do not issue new instruction
 wire rs_nxt_full;
 wire lsb_nxt_full;
 wire rob_nxt_full;
 
-// Reservation Station ALU broadcast
 wire alu_result;
 wire [3:0] alu_result_rob_pos;
 wire [31:0] alu_result_val;
 wire [31:0] alu_result_pc;
 wire alu_result_jump;
-// Load Store Buffer broadcast
+
 wire lsb_result;
 wire [3:0] lsb_result_rob_pos;
 wire [31:0] lsb_result_val;
 
-// Instruction Fetcher <-> Memory Controller
 wire if_to_mc_en;
 wire [31:0] if_to_mc_pc;
 wire mc_to_if_done;
 wire [511:0] mc_to_if_data;
-// Load Store Buffer <-> Memory Controller
+////////////
+wire [31:0] if_to_pred_inst;
+wire if_to_pred_flag;
+wire [31:0] if_to_pred_pc;
+wire [31:0] pred_to_if_pc;
+wire pred_to_if_jump;
+
 wire lsb_to_mc_en;
 wire lsb_to_mc_wr;
 wire [31:0] lsb_to_mc_addr;
@@ -68,19 +72,17 @@ wire [31:0] lsb_to_mc_w_data;
 wire mc_to_lsb_done;
 wire [31:0] mc_to_lsb_r_data;
 
-// Reorder Buffer -> Instruction Fetcher
 wire rob_to_if_set_pc_en;
 wire [31:0] rob_to_if_set_pc;
 wire rob_to_if_br;
 wire rob_to_if_br_jump;
 wire [31:0] rob_to_if_br_pc;
-// Instruction Fetcher -> Decoder
+
 wire if_to_dec_inst_rdy;
 wire [31:0] if_to_dec_inst;
 wire [31:0] if_to_dec_inst_pc;
 wire if_to_dec_inst_pred_jump;
 
-// Decoder issues instruction
 wire issue;
 wire [3:0] issue_rob_pos;
 wire [6:0] issue_opcode;
@@ -97,39 +99,36 @@ wire [31:0] issue_pc;
 wire issue_pred_jump;
 wire issue_is_ready;
 
-// Decoder ask in Register File
 wire [4:0] dec_ask_reg_rs1;
 wire [31:0] dec_ask_reg_rs1_val;
 wire [4:0] dec_ask_reg_rs1_rob_id;
 wire [4:0] dec_ask_reg_rs2;
 wire [31:0] dec_ask_reg_rs2_val;
 wire [4:0] dec_ask_reg_rs2_rob_id;
-// Decoder ask in Reorder Buffer
+
 wire [3:0] dec_ask_rob_rs1_pos;
 wire dec_ask_rob_rs1_ready;
 wire [31:0] dec_ask_rob_rs1_val;
 wire [3:0] dec_ask_rob_rs2_pos;
 wire dec_ask_rob_rs2_ready;
 wire [31:0] dec_ask_rob_rs2_val;
-// send instruction to Reservation Station
+
 wire dec_to_rs_en;
-// send instruction to Load Store Buffer
+
 wire dec_to_lsb_en;
-// get next free position of Reorder Buffer
+
 wire [3:0] nxt_rob_pos;
 
-// commit
 wire [3:0] rob_commit_pos;
-// write to Register
+
 wire rob_to_reg_write;
 wire [4:0] rob_to_reg_rd;
 wire [31:0] rob_to_reg_val;
-// to Load Store Buffer
+
 wire rob_to_lsb_commit_store;
 
 wire [3:0] rob_head_pos;
 
-  // Reservation Station -> ALU
 wire rs_to_alu_en;
 wire [6:0] rs_to_alu_opcode;
 wire [2:0] rs_to_alu_funct3;
@@ -202,7 +201,27 @@ IFetch IFetch_ (
   .rob_set_pc(rob_to_if_set_pc),
   .rob_br(rob_to_if_br),
   .rob_br_jump(rob_to_if_br_jump),
-  .rob_br_pc(rob_to_if_br_pc)
+  .rob_br_pc(rob_to_if_br_pc),
+
+  .inst_to_pred(if_to_pred_inst),
+  .true_hit(if_to_pred_flag),
+  .to_pred_pc(if_to_pred_pc),
+  .pred_pc(pred_to_if_pc),
+  .pred_jump(pred_to_if_jump)
+);
+
+Predictor Predictor_(
+  .clk(clk_in),
+  .rst(rst_in),
+  .rdy(rdy_in),
+  .rob_br(rob_to_if_br),
+  .rob_br_jump(rob_to_if_br_jump),
+  .rob_br_pc(rob_to_if_br_pc),
+  .get_inst(if_to_pred_inst),
+  .flag(if_to_pred_flag),
+  .pc(if_to_pred_pc),
+  .pred_pc(pred_to_if_pc),
+  .pred_jump(pred_to_if_jump)
 );
 
 Decoder Decoder_ (

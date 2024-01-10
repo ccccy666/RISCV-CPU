@@ -30,13 +30,13 @@ module Register (
 
 reg [31:0] val[31:0];
 reg [4:0] rob_id[31:0];  // {flag, rob_id}; flag: 0=ready, 1=renamed
-wire is_latest_commit = rob_id[commit_rd] == {1'b1, commit_rob_pos};
+wire true_commit = rob_id[commit_rd] == {1'b1, commit_rob_pos};
 wire nonzero_commit = commit && commit_rd != 0;
   
 
 integer i;
 always @(*) begin
-  if (!nonzero_commit || rs1 != commit_rd || !is_latest_commit) begin
+  if (!nonzero_commit || rs1 != commit_rd || !true_commit) begin
     rob_id1 = rob_id[rs1];
     val1 = val[rs1];
   end else begin
@@ -44,8 +44,7 @@ always @(*) begin
     rob_id1 = 5'b0;
   end
 
-  if (!nonzero_commit || rs2 != commit_rd || !is_latest_commit) begin
-    
+  if (!nonzero_commit || rs2 != commit_rd || !true_commit) begin
     rob_id2 = rob_id[rs2];
     val2 = val[rs2];
   end else begin
@@ -67,7 +66,7 @@ always @(posedge clk) begin
     
     if (nonzero_commit) begin
       val[commit_rd] <= commit_val;
-      if (is_latest_commit) begin
+      if (true_commit) begin
         rob_id[commit_rd] <= 5'b0;
       end
     end

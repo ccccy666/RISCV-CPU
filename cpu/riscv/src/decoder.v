@@ -3,69 +3,69 @@
 `include "constant.v"
 
 module Decoder (
-  // input wire clk,
-  input wire rst,
-  input wire rdy,
+    // input wire clk,
+    input wire rst,
+    input wire rdy,
 
-  input wire rollback,
+    input wire rollback,
 
-  // from Instruction Fetcher
-  input wire inst_rdy,
-  input wire [31:0] inst,
-  input wire [31:0] inst_pc,
-  input wire inst_pred_jump,
+    // from Instruction Fetcher
+    input wire inst_rdy,
+    input wire [31:0] inst,
+    input wire [31:0] inst_pc,
+    input wire inst_pred_jump,
 
-  // query in Reorder Buffer
-  output wire [3:0] rob_rs1_pos,
-  input wire rob_rs1_ready,
-  input wire [31:0] rob_rs1_val,
-  output wire [3:0] rob_rs2_pos,
-  input wire rob_rs2_ready,
-  input wire [31:0] rob_rs2_val,
+    // query in Reorder Buffer
+    output wire [3:0] rob_rs1_pos,
+    input wire rob_rs1_ready,
+    input wire [31:0] rob_rs1_val,
+    output wire [3:0] rob_rs2_pos,
+    input wire rob_rs2_ready,
+    input wire [31:0] rob_rs2_val,
 
-  output reg rs_en,
-  output reg lsb_en,
+    output reg rs_en,
+    output reg lsb_en,
 
-  input wire [3:0] nxt_rob_pos,
+    input wire [3:0] nxt_rob_pos,
 
 
-  // query in Register File
-  output wire [4:0] reg_rs1,
-  input wire [31:0] reg_rs1_val,
-  input wire [4:0] reg_rs1_rob_id,
-  output wire [4:0] reg_rs2,
-  input wire [31:0] reg_rs2_val,
-  input wire [4:0] reg_rs2_rob_id,
+    // query in Register File
+    output wire [4:0] reg_rs1,
+    input wire [31:0] reg_rs1_val,
+    input wire [4:0] reg_rs1_rob_id,
+    output wire [4:0] reg_rs2,
+    input wire [31:0] reg_rs2_val,
+    input wire [4:0] reg_rs2_rob_id,
 
-  
-  // handle the broadcast
-  // from Reservation Station
-  input wire alu_result,
-  input wire [3:0] alu_result_rob_pos,
-  input wire [31:0] alu_result_val,
-  // from Load Store Buffer
-  input wire lsb_result,
-  input wire [3:0] lsb_result_rob_pos,
-  input wire [31:0] lsb_result_val,
+    
+    // handle the broadcast
+    // from Reservation Station
+    input wire alu_result,
+    input wire [3:0] alu_result_rob_pos,
+    input wire [31:0] alu_result_val,
+    // from Load Store Buffer
+    input wire lsb_result,
+    input wire [3:0] lsb_result_rob_pos,
+    input wire [31:0] lsb_result_val,
 
-  // issue instruction
-  output reg issue,
-  output reg pred_jump,
-  output reg [3:0] rob_pos,
-  output reg [6:0] opcode,
-  output reg [2:0] funct3,
-  output reg funct7,
-  output reg [31:0] imm,
-  output reg [4:0] rd,
-  output reg [31:0] pc,
-  output reg [31:0] rs1_val,
-  output reg [31:0] rs2_val,
-  output reg [4:0] rs1_rob_id,
+    // issue instruction
+    output reg issue,
+    output reg pred_jump,
+    output reg [3:0] rob_pos,
+    output reg [6:0] opcode,
+    output reg [2:0] funct3,
+    output reg funct7,
+    output reg [31:0] imm,
+    output reg [4:0] rd,
+    output reg [31:0] pc,
+    output reg [31:0] rs1_val,
+    output reg [31:0] rs2_val,
+    output reg [4:0] rs1_rob_id,
 
-  output reg [4:0] rs2_rob_id,
-  
-  output reg is_store,
-  output reg is_ready
+    output reg [4:0] rs2_rob_id,
+    
+    output reg is_store,
+    output reg is_ready
 );
 assign reg_rs1 = inst[19:15];
 assign reg_rs2 = inst[24:20];
