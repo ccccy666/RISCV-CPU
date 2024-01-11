@@ -15,7 +15,7 @@ module MemCtrl (
     output reg mem_wr,    // write/read signal (1 for write)
 
     input wire io_buffer_full,  // 1 if uart buffer is full
-  // Load Store Buffer
+
     input wire lsb_en,
     input wire lsb_wr,      
     input wire [31:0] lsb_addr,
@@ -23,7 +23,7 @@ module MemCtrl (
     input wire [31:0] lsb_w_data,
     output reg lsb_done,
     output reg [31:0] lsb_r_data,
-    // instruction fetch
+    
     input wire if_en,
     input wire [31:0] if_pc,
     output reg if_done,

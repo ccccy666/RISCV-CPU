@@ -45,7 +45,7 @@ always @(*) begin
   
 end
 integer i;
-always @(posedge clk) begin
+always @(*) begin
   if (rst) begin
     for (i = 0; i < 256; i = i + 1) begin
       bht[i] <= 0;

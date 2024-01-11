@@ -10,7 +10,7 @@ module RS(
     input wire rollback,
 
     output reg rs_nxt_full,
-    // issue instruction
+
     input wire issue,
     input wire [3:0] issue_rob_pos,
     input wire [6:0] issue_opcode,
@@ -25,7 +25,6 @@ module RS(
     input wire [4:0] issue_rs2_rob_id,
     
 
-    // to ALU
     output reg alu_en,
     output reg [6:0] alu_opcode,
     output reg [2:0] alu_funct3,

@@ -10,7 +10,6 @@ module ALU (
 
     input wire rollback,
 
-    // from Reservation Station
     input wire alu_en,
     input wire [6:0] opcode,
     input wire [2:0] funct3,
@@ -21,7 +20,6 @@ module ALU (
     input wire [31:0] pc,
     input wire [3:0] rob_pos,
 
-    // broadcast result
     output reg result,
     output reg [3:0] result_rob_pos,
     output reg [31:0] result_val,

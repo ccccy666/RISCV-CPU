@@ -3,19 +3,16 @@
 `include "constant.v"
 
 module Decoder (
-    // input wire clk,
     input wire rst,
     input wire rdy,
 
     input wire rollback,
 
-    // from Instruction Fetcher
     input wire inst_rdy,
     input wire [31:0] inst,
     input wire [31:0] inst_pc,
     input wire inst_pred_jump,
 
-    // query in Reorder Buffer
     output wire [3:0] rob_rs1_pos,
     input wire rob_rs1_ready,
     input wire [31:0] rob_rs1_val,
@@ -29,7 +26,6 @@ module Decoder (
     input wire [3:0] nxt_rob_pos,
 
 
-    // query in Register File
     output wire [4:0] reg_rs1,
     input wire [31:0] reg_rs1_val,
     input wire [4:0] reg_rs1_rob_id,
@@ -38,17 +34,14 @@ module Decoder (
     input wire [4:0] reg_rs2_rob_id,
 
     
-    // handle the broadcast
-    // from Reservation Station
+
     input wire alu_result,
     input wire [3:0] alu_result_rob_pos,
     input wire [31:0] alu_result_val,
-    // from Load Store Buffer
     input wire lsb_result,
     input wire [3:0] lsb_result_rob_pos,
     input wire [31:0] lsb_result_val,
 
-    // issue instruction
     output reg issue,
     output reg pred_jump,
     output reg [3:0] rob_pos,
@@ -73,7 +66,6 @@ assign rob_rs1_pos = reg_rs1_rob_id[3:0];
 assign rob_rs2_pos = reg_rs2_rob_id[3:0];
 
 always @(*) begin
-  // $display("Dec");
   issue  = 0;
   lsb_en = 0;
   rs_en  = 0;
@@ -132,7 +124,6 @@ always @(*) begin
     end
 
     
-    // mask unused rs1 rs2
     case (inst[6:0])
       `OPCODE_LUI: begin
         imm = {inst[31:12], 12'b0};

@@ -8,16 +8,13 @@ module Register (
     input wire rdy,
 
     input wire rollback,
-    // ReorderBuffer commit
+    input wire issue,
+    input wire [4:0] issue_rd,
+    input wire [3:0] issue_rob_pos,
     input wire commit,
     input wire [4:0] commit_rd,
     input wire [31:0] commit_val,
     input wire [3:0] commit_rob_pos,
-    // Decoder issue instruction
-    input wire issue,
-    input wire [4:0] issue_rd,
-    input wire [3:0] issue_rob_pos,
-    // query from Decoder, combinational
     input wire [4:0] rs1,
     output reg [31:0] val1,
     output reg [4:0] rob_id1,

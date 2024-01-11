@@ -1,5 +1,7 @@
 `ifndef LSB
 `define LSB
+// `ifndef DEBUG
+// `define DEBUG
 `include "constant.v"
 
 module LSB (
@@ -11,7 +13,14 @@ module LSB (
 
     output wire lsb_nxt_full,
 
-    // issue instruction
+    output reg mc_en,
+    output reg mc_wr,
+    output reg [31:0] mc_addr,
+    output reg [2:0] mc_len,
+    output reg [31:0] mc_w_data,
+    input wire mc_done,
+    input wire [31:0] mc_r_data,
+
     input wire issue,
     input wire [3:0] issue_rob_pos,
     input wire issue_is_store,
@@ -22,42 +31,29 @@ module LSB (
     input wire [4:0] issue_rs2_rob_id,
     input wire [31:0] issue_imm,
 
-    // Memory Controller
-    output reg mc_en,
-    output reg mc_wr,      // 1 = write
-    output reg [31:0] mc_addr,
-    output reg [2:0] mc_len,
-    output reg [31:0] mc_w_data,
-    input wire mc_done,
-    input wire [31:0] mc_r_data,
+    
 
-    // broadcast result
     output reg result,
     output reg [3:0] result_rob_pos,
     output reg [31:0] result_val,
 
-    // handle the broadcast
-    // from Reservation Station
     input wire alu_result,
     input wire [3:0] alu_result_rob_pos,
     input wire [31:0] alu_result_val,
-    // from Load Store Buffer
+
     input wire lsb_result,
     input wire [3:0] lsb_result_rob_pos,
     input wire [31:0] lsb_result_val,
 
-    // Reorder Buffer commits store
     input wire commit_store,
     input wire [3:0] commit_rob_pos,
 
-    // check if I/O read can be done
     input wire [3:0] head_rob_pos
 );
 integer i;
 reg empty;
 
 reg busy[15:0];
-reg is_store[15:0];
 reg [2:0] funct3[15:0];
 reg [31:0] rs1_val[15:0];
 reg [31:0] rs2_val[15:0];
@@ -66,10 +62,15 @@ reg [4:0] rs2_rob_id[15:0];
 reg [31:0] imm [15:0];
 reg [3:0] rob_pos[15:0];
 reg committed[15:0];
+reg is_store[15:0];
 
 reg [3:0] head, tail;
 reg [4:0] last_commit_pos;
 reg [1:0] status;
+
+wire pop = status == 1 && mc_done;
+wire nxt_empty = (head + pop == tail + issue && (empty || pop && !issue));
+assign lsb_nxt_full = (head + pop == tail + issue && !nxt_empty);
 
 wire [31:0] head_addr = rs1_val[head] + imm[head];
 wire head_is_io = head_addr[17:16] == 2'b11;
@@ -79,9 +80,6 @@ wire check = isload || committed[head];
 
 wire execute = ready && check;
 
-wire pop = status == 1 && mc_done;
-wire nxt_empty = (head + pop == tail + issue && (empty || pop && !issue));
-assign lsb_nxt_full = (head + pop == tail + issue && !nxt_empty);
 
 always @(posedge clk) begin
   if (rst || (rollback && last_commit_pos == 16)) begin
@@ -114,6 +112,18 @@ always @(posedge clk) begin
           last_commit_pos <= {1'b0, i[3:0]};
         end
     end
+// `ifndef DEBUG
+// `define DEBUG
+//   integer file;
+//   initial begin
+//     file = $fopen("output.txt", "w");
+//     if (file != 0) begin
+//       $fdisplay(file, "will Exec %s @%t", is_store[head] ? "S" : "L", $realtime);
+//       $fdisplay(file, "  addr:%X, w:%X, rob_pos:%X", head_addr, rs2_val[head], rob_pos[head]);
+//       $fclose(file);
+//     end
+//   end
+// `endif
     
     if (alu_result)//类似rs,拿到vi,vj
       for (i = 0; i < 16; i = i + 1) begin
@@ -152,7 +162,7 @@ always @(posedge clk) begin
     end
     result <= 0;
     if (status == 1) begin
-      if (mc_done) begin  // finish
+      if (mc_done) begin
         busy[head] <= 0;
         committed[head] <= 0;
         result_rob_pos <= rob_pos[head];//load需要
@@ -174,7 +184,7 @@ always @(posedge clk) begin
         end
         
       end
-    end else begin  // status == 0
+    end else begin
       
       mc_en <= 0;
       if (execute) begin//传给mc
@@ -216,7 +226,7 @@ always @(posedge clk) begin
         busy[i] <= 0;
       end
     end
-    if (status == 1 && mc_done) begin  // finish
+    if (status == 1 && mc_done) begin
       busy[head] <= 0;
       committed[head] <= 0;
       
@@ -228,9 +238,9 @@ always @(posedge clk) begin
       mc_en <= 0;
       head <= head + 1;
     end
-    // execute Load or Store
     
   end
 end
 endmodule
 `endif
+//`endif
