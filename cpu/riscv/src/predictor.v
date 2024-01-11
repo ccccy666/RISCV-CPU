@@ -48,7 +48,7 @@ integer i;
 always @(*) begin
   if (rst) begin
     for (i = 0; i < 256; i = i + 1) begin
-      bht[i] <= 0;
+      bht[i] = 0;
     end
   end else if (!rdy)begin
     ;
@@ -56,12 +56,12 @@ always @(*) begin
     if (rob_br) begin
       if (!rob_br_jump) begin
         if (bht[bht_idx] >= 1) begin
-          bht[bht_idx] <= bht[bht_idx] - 1;
+          bht[bht_idx] = bht[bht_idx] - 1;
         end
         
       end else begin
         if (bht[bht_idx] <= 2) begin
-          bht[bht_idx] <= bht[bht_idx] + 1;
+          bht[bht_idx] = bht[bht_idx] + 1;
         end
       end
     end
